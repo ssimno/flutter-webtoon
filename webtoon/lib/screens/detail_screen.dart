@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webtoon/models/webtoon_detail_model.dart';
 import 'package:webtoon/services/api_service.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class DetailScreen extends StatefulWidget {
   final String id, titleThumb, title;
@@ -32,6 +32,12 @@ class _DetailScreenState extends State<DetailScreen> {
     if (isLiked) likedToons?.add(widget.id);
 
     prefs.setStringList(likeKey, likedToons ?? []);
+  }
+
+  Future<void> _launchUrl(Uri url) async {
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
   }
 
   Future initPrefs() async {
@@ -155,16 +161,8 @@ class _DetailScreenState extends State<DetailScreen> {
                             for (var episode in episodes)
                               GestureDetector(
                                 onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => WebView(
-                                          initialUrl:
-                                              'https://comic.naver.com/webtoon/detail?titleId=${widget.id}&no=${episode.id}',
-                                          javascriptMode:
-                                              JavascriptMode.unrestricted,
-                                        ),
-                                      ));
+                                  _launchUrl(Uri.parse(
+                                      'https://comic.naver.com/webtoon/detail?titleId=${widget.id}&no=${episode.id}'));
                                 },
                                 child: Container(
                                   margin: const EdgeInsets.only(bottom: 10),
